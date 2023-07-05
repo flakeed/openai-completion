@@ -1,0 +1,117 @@
+{
+  "package": {
+    "name": "@deep-foundation/openai-completion",
+    "version": "1.0.12"
+  },
+  "data": [
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "HandleInsert"
+      },
+      "id": 1
+    },
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "Type"
+      },
+      "id": 2
+    },
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "User"
+      },
+      "id": 3
+    },
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "Any"
+      },
+      "id": 4
+    },
+    {
+      "package": {
+        "dependencyId": 1,
+        "containValue": "Dependency"
+      },
+      "id": 5
+    },
+    {
+      "package": {
+        "dependencyId": 2,
+        "containValue": "ApiKey"
+      },
+      "id": 6
+    },
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "SyncTextFile"
+      },
+      "id": 7
+    },
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "Handler"
+      },
+      "id": 8
+    },
+    {
+      "package": {
+        "dependencyId": 0,
+        "containValue": "dockerSupportsJs"
+      },
+      "id": 9
+    },
+    {
+      "id": "HandleOpenAiRequest",
+      "type": 1,
+      "from": "OpenAiRequest",
+      "to": "OpenAiRequestHandler"
+    },
+    {
+      "id": "OpenAiRequest",
+      "type": 2,
+      "from": 3,
+      "to": 4
+    },
+    {
+      "id": "Dependency",
+      "type": 5,
+      "from": "OpenAiRequest",
+      "to": 6
+    },
+    {
+      "id": "OpenAiRequestHandlerCode",
+      "type": 7,
+      "value": {
+        "value": "async ({data: {newLink:openAiRequestLink,triggeredByLinkId},deep,require}) => {\n  const {Configuration, OpenAIApi} = require(\"openai\")\n  const apiKeyTypeLinkId = await deep.id('@deep-foundation/openai', \"ApiKey\")\n  const usesApiKeyTypeLinkId = await deep.id('@deep-foundation/openai', \"UsesApiKey\")\n    const containTypeLinkId = await deep.id('@deep-foundation/core', \"Contain\")\n\n  const {data: [linkWithStringValue]} = await deep.select({\n      id: openAiRequestLink.to_id\n  })\n  if(!linkWithStringValue.value?.value){\n      throw new Error(`##${linkWithStringValue.id} must have a value`)\n  }\n  const openAiPrompt = linkWithStringValue.value.value\n\n  const apiKeyLink = await getTokenLink();\n  const apiKey = apiKeyLink.value.value;\n  const configuration = new Configuration({\n      apiKey: apiKey,\n  });\n  const openai = new OpenAIApi(configuration);\n\n  const response = await openai.createCompletion({\n      model: \"text-davinci-003\",\n      prompt: openAiPrompt,\n      temperature: 0.9,\n      max_tokens: 1500,\n      top_p: 1,\n      frequency_penalty: 0,\n      presence_penalty: 0.6,\n      stop: [\" Human:\", \" AI:\"],\n  });\n\n  async function getTokenLink() {\n    let resultTokenLink;\n    const { data } = await deep.select({\n        _or: [\n            {\n                type_id: apiKeyTypeLinkId,\n                in: {\n                    type_id: containTypeLinkId,\n                    from_id: triggeredByLinkId,\n                },\n            },\n            {\n                from_id: triggeredByLinkId,\n                type_id: usesApiKeyTypeLinkId,\n            },\n        ],\n    });\n    if (data.length === 0) {\n        throw new Error(`Link of type ##${apiKeyTypeLinkId} is not found`);\n    }\n    const usesLinks = data.filter(\n        (link) => link.type_id === usesApiKeyTypeLinkId\n    );\n    if (usesLinks.length > 1) {\n        throw new Error(\n            `More than 1 links of type ##${usesApiKeyTypeLinkId} are found`\n        );\n    }\n    const usesLink = data.find(\n        (link) => link.type_id === usesApiKeyTypeLinkId\n    );\n    if (usesLink) {\n        const tokenLink = data.find((link) => link.id === usesLink.to_id);\n        if (!tokenLink) {\n            throw new Error(`Link of type ##${apiKeyTypeLinkId} is not found`);\n        } else {\n            resultTokenLink = tokenLink;\n        }\n    } else {\n        const tokenLink = data.filter(\n            (link) => link.type_id === apiKeyTypeLinkId\n        );\n        if (tokenLink.length > 1) {\n            throw new Error(\n                `For 2 or more ##${apiKeyTypeLinkId} links you must activate it with usesOpenAiApiKey link`\n            );\n        } else {\n            const tokenLink = data.find(\n                (link) => link.type_id === apiKeyTypeLinkId\n            );\n            if (!tokenLink) {\n                throw new Error(`Link of type ##${apiKeyTypeLinkId} is not found`);\n            }\n            resultTokenLink = tokenLink;\n        }\n    }\n    if (!resultTokenLink.value?.value) {\n        throw new Error(`Link of type ##${apiKeyTypeLinkId} has no value`);\n    }\n    return resultTokenLink;\n}\n\n\n  return response.data;\n}"
+      }
+    },
+    {
+      "id": "OpenAiRequestHandler",
+      "type": 8,
+      "from": 9,
+      "to": "OpenAiRequestHandlerCode"
+    }
+  ],
+  "errors": [],
+  "dependencies": [
+    {
+      "name": "@deep-foundation/core",
+      "version": "0.0.2"
+    },
+    {
+      "name": "@freephoenix888/dependency",
+      "version": "0.0.1"
+    },
+    {
+      "name": "@deep-foundation/openai",
+      "version": "1.0.2"
+    }
+  ]
+}
