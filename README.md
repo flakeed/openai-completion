@@ -4,3 +4,5 @@
 [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/deep-foundation)
 
 A package with which we can use OpenAI-completion
+
+# Steps for Starting to Use Completion from Deep
