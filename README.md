@@ -5,4 +5,6 @@
 
 A package with which we can use OpenAI completion
 
-# Steps for Starting to Use Completion from Deep
+# Steps for Starting to Use Completion from Deep:
+
+1.
