@@ -7,6 +7,6 @@ A package with which we can use OpenAI completion
 
 # Steps for Starting to Use Completion from Deep:
 
-1.
+1. Run GitPod dev
 2.
 3.
